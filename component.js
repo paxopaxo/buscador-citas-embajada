@@ -28,12 +28,12 @@ function sumarDias(fecha, dias){
 function apiCall(url) {
   return axios({
     method: 'get',
-    url ,
+    url,
     responseType: 'json'
   })
 }
 
-const arr_dates = []
+let arr_dates = []
 const actual_date = getFirstDayOfWeek( new Date() )
 while (true) {
   const sgte_semana = sumarDias(actual_date, 7) 
@@ -42,31 +42,38 @@ while (true) {
   }
   arr_dates.push( format( sgte_semana ) )
 }
+arr_dates = arr_dates.map( date => url + '&' + date )
 // console.log( arr_dates )
 
-const results = []
-arr_dates.forEach( async(date) => {
+const main = async() => {
   try {
-    const actual_url = (url + '&' + date)
-    const res = await axios({
-      method: 'get',
-      url: actual_url  ,
-      responseType: 'json'
-    })
-    if (res.status == 200 ) {
-      const index =  res.data.search('Try another week') // Mensaje que aparece cuando esta todo ocupado
-      if ( index == -1 ) {
-        results.push( date )
+    const results = []
+    const sin_fecha = []
+    const responses = await Promise.all( arr_dates.map( date => apiCall(date)) )
+    responses.forEach( (res) => {
+  
+      if (res.status == 200 ) {
+        const index =  res.data.search('Try another week') // Mensaje que aparece cuando esta todo ocupado
+        const date = res.request.path.slice(-10) 
+        if ( index == -1 ) {
+          results.push( date )
+        } else {
+          sin_fecha.push(date)
+        }
       }
+  
+    })
+  
+    if (results.length !== 0) {
+      results.forEach( (date) => {
+        console.log('Se ha encontrado fecha para '+date);
+      })
+    } else {
+      console.log('No se ha encontrado fecha alguna')
     }
 
   } catch (error) {
     console.log(error)
   }
-})
-
-if (results.length !== 0) {
-  results.forEach( (date) => {
-    console.log('Se ha encontrado fecha para '+date);
-  })
 }
+main() 
