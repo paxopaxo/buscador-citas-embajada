@@ -1,4 +1,6 @@
 const axios = require('axios').default
+const colors = require('colors')
+
 const url = 'https://pasaporte-croata-vrh-santiago.youcanbook.me/service/jsps/cal.jsp?cal=b3e40558-9d9d-4225-a957-39737e19c10d&ini=1659554624485'
 
 function getFirstDayOfWeek(d) {
@@ -55,13 +57,15 @@ const main = async() => {
       if (res.status == 200 ) {
         const index =  res.data.search('Try another week') // Mensaje que aparece cuando esta todo ocupado
         const date = res.request.path.slice(-10) 
+        console.log( ('SOLICITUD SEMANA '+date+' CORRECTA').green)
         if ( index == -1 ) {
           results.push( date )
         } else {
           sin_fecha.push(date)
         }
+      } else {
+        console.log(('SOLICITUD SEMANA '+date+' NO SE REALIZÓ').red);
       }
-  
     })
   
     if (results.length !== 0) {
@@ -70,6 +74,7 @@ const main = async() => {
       })
     } else {
       console.log('No se ha encontrado fecha alguna')
+      // console.log(sin_fecha);
     }
 
   } catch (error) {
